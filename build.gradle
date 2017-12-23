@@ -1,0 +1,29 @@
+buildscript {
+  repositories {
+    jcenter()
+  }
+  dependencies {
+    classpath "io.ratpack:ratpack-gradle:1.5.1"
+    classpath "com.github.jengelman.gradle.plugins:shadow:1.2.4"
+  }
+}
+
+apply plugin: "io.ratpack.ratpack-groovy"
+apply plugin: "com.github.johnrengelman.shadow"
+apply plugin: "idea"
+
+repositories {
+  jcenter()
+}
+
+dependencies {
+
+  runtime 'org.slf4j:slf4j-simple:1.7.25'
+
+  compile group: 'com.github.davidmoten', name: 'grumpy-core', version: '0.2.3'
+  compile group: 'com.github.davidmoten', name: 'rtree', version: '0.8.0.4'
+
+  compile ratpack.dependency('rx')
+
+  testCompile "org.spockframework:spock-core:1.0-groovy-2.4"
+}

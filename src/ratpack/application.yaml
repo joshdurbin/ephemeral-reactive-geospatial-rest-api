@@ -1,0 +1,6 @@
+star: true
+minChildren: 2
+maxChildren: 4
+maxResults: 50
+defaultSearchRadius: 100
+maxAllowableSearchRadius: 500
