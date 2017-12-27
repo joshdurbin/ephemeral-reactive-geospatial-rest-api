@@ -68,7 +68,7 @@ class RTreePlacesService implements PlacesService {
     @Override
     Observable<String> savePlace(Place place) {
 
-        final String id = UUID.randomUUID()
+        final String id = UUID.randomUUID().toString()
 
         subject.onNext(Factories.defaultFactory().createEntry(new IdAssignedPlace(id: id, place: place), Geometries.pointGeographic(place.longitude, place.latitude)))
 

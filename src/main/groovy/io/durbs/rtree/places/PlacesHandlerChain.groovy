@@ -124,7 +124,10 @@ class PlacesHandlerChain extends GroovyChainAction {
 
             placesService
                 .findPlacesNear(latitude, longitude, queryRadius)
-                .toList()
+                .toSortedList( { PlaceWithDistance firstPlace, PlaceWithDistance secondPlace ->
+
+                    (firstPlace.distance - secondPlace.distance).intValue()
+                })
                 .subscribe { List<PlaceWithDistance> places ->
 
                     render Jackson.json(places)

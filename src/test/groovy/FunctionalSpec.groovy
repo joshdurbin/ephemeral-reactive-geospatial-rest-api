@@ -157,7 +157,52 @@ class FunctionalSpec extends Specification {
         (jsonSlurper.parseText(response.body.text) as List).size() == 2
         (jsonSlurper.parseText(response.body.text) as List).first().get('distance') == 0.0
         (jsonSlurper.parseText(response.body.text) as List).first().get('name') == exploratorium.name
-        (jsonSlurper.parseText(response.body.text) as List).last().get('name') == sutroBaths.name
         (jsonSlurper.parseText(response.body.text) as List).last().get('distance') == distanceBetweenExploratoriumAndSutroBathsInMeters
+        (jsonSlurper.parseText(response.body.text) as List).last().get('name') == sutroBaths.name
+    }
+
+    void "10km geo query from sutro baths should return itself and the exploratorium"() {
+
+        when:
+        def response = applicationUnderTest.httpClient.get("$Constants.BASE_API_RESOURCE_PATH_WITH_STARTING_SLASH/near/${sutroBaths.latitude}/${sutroBaths.longitude}/10")
+
+        then:
+        (jsonSlurper.parseText(response.body.text) as List).size() == 2
+        (jsonSlurper.parseText(response.body.text) as List).first().get('distance') == 0.0
+        (jsonSlurper.parseText(response.body.text) as List).first().get('name') == sutroBaths.name
+        (jsonSlurper.parseText(response.body.text) as List).last().get('distance') == distanceBetweenExploratoriumAndSutroBathsInMeters
+        (jsonSlurper.parseText(response.body.text) as List).last().get('name') == exploratorium.name
+    }
+
+    void "5km geo query from the exploratorium should return itself only"() {
+
+        when:
+        def response = applicationUnderTest.httpClient.get("$Constants.BASE_API_RESOURCE_PATH_WITH_STARTING_SLASH/near/${exploratorium.latitude}/${exploratorium.longitude}/5")
+
+        then:
+        (jsonSlurper.parseText(response.body.text) as List).size() == 1
+        (jsonSlurper.parseText(response.body.text) as List).first().get('distance') == 0.0
+        (jsonSlurper.parseText(response.body.text) as List).first().get('name') == exploratorium.name
+    }
+
+    void "5km geo query from sutro baths should return itself only"() {
+
+        when:
+        def response = applicationUnderTest.httpClient.get("$Constants.BASE_API_RESOURCE_PATH_WITH_STARTING_SLASH/near/${sutroBaths.latitude}/${sutroBaths.longitude}/5")
+
+        then:
+        (jsonSlurper.parseText(response.body.text) as List).size() == 1
+        (jsonSlurper.parseText(response.body.text) as List).first().get('distance') == 0.0
+        (jsonSlurper.parseText(response.body.text) as List).first().get('name') == sutroBaths.name
+    }
+
+    void "5km geo query twin peaks should return the exploratorium"() {
+
+        when:
+        def response = applicationUnderTest.httpClient.get("$Constants.BASE_API_RESOURCE_PATH_WITH_STARTING_SLASH/near/${twinPeaks.latitude}/${twinPeaks.longitude}/5")
+
+        then:
+        (jsonSlurper.parseText(response.body.text) as List).size() == 1
+        (jsonSlurper.parseText(response.body.text) as List).first().get('name') == exploratorium.name
     }
 }
