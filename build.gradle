@@ -5,12 +5,15 @@ buildscript {
   dependencies {
     classpath "io.ratpack:ratpack-gradle:1.5.1"
     classpath "com.github.jengelman.gradle.plugins:shadow:1.2.4"
+    classpath 'com.bmuschko:gradle-docker-plugin:3.0.11'
   }
 }
 
 apply plugin: "io.ratpack.ratpack-groovy"
 apply plugin: "com.github.johnrengelman.shadow"
 apply plugin: "idea"
+apply plugin: 'com.bmuschko.docker-remote-api'
+apply plugin: 'com.bmuschko.docker-java-application'
 
 repositories {
   jcenter()
@@ -26,4 +29,11 @@ dependencies {
   compile ratpack.dependency('rx')
 
   testCompile "org.spockframework:spock-core:1.0-groovy-2.4"
+}
+
+docker {
+  javaApplication {
+    maintainer = 'Josh Durbin "durbinjo593@gmail.com"'
+    port = 5050
+  }
 }
