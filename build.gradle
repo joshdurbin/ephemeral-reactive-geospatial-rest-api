@@ -37,13 +37,15 @@ dependencies {
 
 docker {
 
-  url = System.env.('DOCKER_HOST')
-  certPath = new File(System.env.DOCKER_CERT_PATH)
+  if (System.getenv('CI')) {
+    url = System.getenv('DOCKER_HOST')
+    certPath = new File(System.getenv('DOCKER_CERT_PATH'))
 
-  registryCredentials {
-    username = System.getenv('DOCKER_USERNAME')
-    password = System.getenv('DOCKER_PASSWORD')
-    email = System.getenv('DOCKER_EMAIL')
+    registryCredentials {
+      username = System.getenv('DOCKER_USERNAME')
+      password = System.getenv('DOCKER_PASSWORD')
+      email = System.getenv('DOCKER_EMAIL')
+    }
   }
 
   javaApplication {
