@@ -43,6 +43,9 @@ docker {
     email = System.getenv('DOCKER_EMAIL')
   }
 
+  println "*******************************************************************************************************************************************************************************************************************************************************************************"
+  println "user = ${System.getenv('DOCKER_USERNAME')}, pass = ${System.getenv('DOCKER_PASSWORD')}, email = ${System.getenv('DOCKER_EMAIL')}"
+
   javaApplication {
     maintainer = 'Josh Durbin "durbinjo593@gmail.com"'
     port = 5050
