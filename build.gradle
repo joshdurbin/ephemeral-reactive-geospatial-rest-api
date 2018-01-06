@@ -37,14 +37,14 @@ dependencies {
 
 docker {
 
+  url = System.env.('DOCKER_HOST')
+  certPath = new File(System.env.DOCKER_CERT_PATH)
+
   registryCredentials {
     username = System.getenv('DOCKER_USERNAME')
     password = System.getenv('DOCKER_PASSWORD')
     email = System.getenv('DOCKER_EMAIL')
   }
-
-  println "*******************************************************************************************************************************************************************************************************************************************************************************"
-  println "user = ${System.getenv('DOCKER_USERNAME')}, pass = ${System.getenv('DOCKER_PASSWORD')}, email = ${System.getenv('DOCKER_EMAIL')}"
 
   javaApplication {
     maintainer = 'Josh Durbin "durbinjo593@gmail.com"'
