@@ -3,8 +3,8 @@ buildscript {
     jcenter()
   }
   dependencies {
-    classpath "io.ratpack:ratpack-gradle:1.5.1"
-    classpath "com.github.jengelman.gradle.plugins:shadow:2.0.2"
+    classpath 'io.ratpack:ratpack-gradle:1.5.1'
+    classpath 'com.github.jengelman.gradle.plugins:shadow:2.0.2'
     classpath 'com.bmuschko:gradle-docker-plugin:3.0.11'
   }
 }
@@ -13,11 +13,11 @@ plugins {
   id 'com.palantir.git-version' version '0.10.0'
 }
 
-apply plugin: "io.ratpack.ratpack-groovy"
-apply plugin: "com.github.johnrengelman.shadow"
-apply plugin: "idea"
+apply plugin: 'io.ratpack.ratpack-groovy'
+apply plugin: 'com.github.johnrengelman.shadow'
+apply plugin: 'idea'
 apply plugin: 'com.bmuschko.docker-java-application'
-apply plugin: "com.palantir.git-version"
+apply plugin: 'com.palantir.git-version'
 
 repositories {
   jcenter()
@@ -32,7 +32,7 @@ dependencies {
 
   compile ratpack.dependency('rx')
 
-  testCompile "org.spockframework:spock-core:1.0-groovy-2.4"
+  testCompile 'org.spockframework:spock-core:1.0-groovy-2.4'
 }
 
 docker {
