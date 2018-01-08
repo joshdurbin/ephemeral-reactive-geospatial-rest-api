@@ -32,7 +32,7 @@ class PlacesHandlerChain extends GroovyChainAction {
     @Override
     void execute() throws Exception {
 
-        path('') {
+        path() {
 
             byMethod {
 
@@ -71,34 +71,23 @@ class PlacesHandlerChain extends GroovyChainAction {
             }
         }
 
-        get('count') {
+        delete('deleteAllPlaces') {
 
-            placesService
-                .getNumberOfStoredPlaces()
-                .subscribe { Integer numberOfPlaces ->
-
-                    render "${numberOfPlaces}"
-            }
+            placesService.removeAllPlaces()
+            redirect(Constants.BASE_API_RESOURCE_PATH)
         }
 
+        get('count') {
+
+            render "${placesService.getNumberOfStoredPlaces()}"
+        }
 
         get('random') {
 
             placesService
-                .getRandomPlace()
-                .single()
-                .subscribe { IdAssignedPlace place ->
-
-                render Jackson.json(place)
-                }
-        }
-
-        get(":${Constants.TOKEN_PLACE_ID}") {
-
-            placesService
-                .getPlace(pathTokens[Constants.TOKEN_PLACE_ID])
-                .single()
-                .subscribe { IdAssignedPlace place ->
+                    .getRandomPlace()
+                    .single()
+                    .subscribe { IdAssignedPlace place ->
 
                 render Jackson.json(place)
             }
@@ -133,14 +122,37 @@ class PlacesHandlerChain extends GroovyChainAction {
             }
 
             placesService
-                .findPlacesNear(latitude, longitude, queryRadius)
-                .toSortedList( { PlaceWithDistance firstPlace, PlaceWithDistance secondPlace ->
+                    .findPlacesNear(latitude, longitude, queryRadius)
+                    .toSortedList( { PlaceWithDistance firstPlace, PlaceWithDistance secondPlace ->
 
-                    (firstPlace.distance - secondPlace.distance).intValue()
-                })
-                .subscribe { List<PlaceWithDistance> places ->
+                (firstPlace.distance - secondPlace.distance).intValue()
+            })
+                    .subscribe { List<PlaceWithDistance> places ->
 
-                    render Jackson.json(places)
+                render Jackson.json(places)
+            }
+        }
+
+        path(":${Constants.TOKEN_PLACE_ID}") {
+
+            byMethod {
+
+                get {
+
+                    placesService
+                            .getPlace(pathTokens[Constants.TOKEN_PLACE_ID])
+                            .single()
+                            .subscribe { IdAssignedPlace place ->
+
+                        render Jackson.json(place)
+                    }
+                }
+
+                delete {
+
+                    placesService.removePlace(pathTokens[Constants.TOKEN_PLACE_ID])
+                    redirect(Constants.BASE_API_RESOURCE_PATH)
+                }
             }
         }
     }

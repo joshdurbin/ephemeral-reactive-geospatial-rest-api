@@ -24,7 +24,7 @@ class FunctionalSpec extends Specification {
     static Place sutroBaths
     static Place twinPeaks
 
-    static Double distanceBetweenExploratoriumAndSutroBathsInMeters = 9.91
+    static Double distanceBetweenExploratoriumAndSutroBathsInKilometers = 9.91
 
     static {
         exploratorium = new Place(name: 'Exploratorium',
@@ -157,7 +157,7 @@ class FunctionalSpec extends Specification {
         (jsonSlurper.parseText(response.body.text) as List).size() == 2
         (jsonSlurper.parseText(response.body.text) as List).first().get('distance') == 0
         (jsonSlurper.parseText(response.body.text) as List).first().get('name') == exploratorium.name
-        (jsonSlurper.parseText(response.body.text) as List).last().get('distance') == distanceBetweenExploratoriumAndSutroBathsInMeters
+        (jsonSlurper.parseText(response.body.text) as List).last().get('distance') == distanceBetweenExploratoriumAndSutroBathsInKilometers
         (jsonSlurper.parseText(response.body.text) as List).last().get('name') == sutroBaths.name
     }
 
@@ -170,7 +170,7 @@ class FunctionalSpec extends Specification {
         (jsonSlurper.parseText(response.body.text) as List).size() == 2
         (jsonSlurper.parseText(response.body.text) as List).first().get('distance') == 0
         (jsonSlurper.parseText(response.body.text) as List).first().get('name') == sutroBaths.name
-        (jsonSlurper.parseText(response.body.text) as List).last().get('distance') == distanceBetweenExploratoriumAndSutroBathsInMeters
+        (jsonSlurper.parseText(response.body.text) as List).last().get('distance') == distanceBetweenExploratoriumAndSutroBathsInKilometers
         (jsonSlurper.parseText(response.body.text) as List).last().get('name') == exploratorium.name
     }
 
@@ -205,4 +205,22 @@ class FunctionalSpec extends Specification {
         (jsonSlurper.parseText(response.body.text) as List).size() == 1
         (jsonSlurper.parseText(response.body.text) as List).first().get('name') == exploratorium.name
     }
+
+//    void "delete all places redirect should return array of size zero"() {
+//
+//        when:
+//        def getPlacesResponse = applicationUnderTest.httpClient.get("$Constants.BASE_API_RESOURCE_PATH_WITH_STARTING_SLASH")
+//
+//        then:
+//        (jsonSlurper.parseText(getPlacesResponse.body.text) as List).size() == 2
+//
+//        when:
+//        def placeIdToDelete = (jsonSlurper.parseText(getPlacesResponse.body.text) as List).first().get('id')
+//
+//        then:
+//        def deletePlaceResponse = applicationUnderTest.httpClient.delete("$Constants.BASE_API_RESOURCE_PATH_WITH_STARTING_SLASH/${placeIdToDelete}")
+//
+//        then:
+//        deletePlaceResponse.statusCode == 404
+//    }
 }

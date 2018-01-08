@@ -9,6 +9,7 @@ import com.github.davidmoten.rtree.geometry.Geometry
 import com.github.davidmoten.rtree.geometry.Point
 import com.google.inject.Inject
 import com.google.inject.Singleton
+import groovy.transform.Canonical
 import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
 import io.durbs.rtree.places.domain.IdAssignedPlace
@@ -16,7 +17,7 @@ import io.durbs.rtree.places.domain.Place
 import io.durbs.rtree.places.domain.PlaceWithDistance
 import io.durbs.rtree.places.error.NoSuchPlaceException
 import rx.Observable
-import rx.Subscriber
+import rx.functions.Action1
 import rx.functions.Func1
 import rx.subjects.PublishSubject
 
@@ -25,7 +26,23 @@ import rx.subjects.PublishSubject
 @Singleton
 class RTreePlacesService implements PlacesService {
 
-    final PublishSubject<Entry<IdAssignedPlace,Point>> subject
+    @Canonical
+    @CompileStatic
+    static class MutatingRTreeAction {
+
+        static enum Type {
+
+            INSERT,
+            DELETE,
+            REBUILD
+        }
+
+        Entry<IdAssignedPlace,Point> data
+        Type type
+    }
+
+    final PublishSubject<MutatingRTreeAction> rTreeActionPublishSubject
+
     final PlacesConfig placesConfig
 
     volatile RTree<IdAssignedPlace, Point> tree
@@ -43,27 +60,35 @@ class RTreePlacesService implements PlacesService {
 
         tree = rTreeBuilder.create()
 
-        subject = PublishSubject.create()
-        subject.subscribe(new Subscriber<Entry<IdAssignedPlace,Point>>() {
+        rTreeActionPublishSubject = PublishSubject.create()
+        rTreeActionPublishSubject.subscribe { MutatingRTreeAction rTreeAction ->
 
-            @Override
-            void onCompleted() {
-
+            if (rTreeAction.type == MutatingRTreeAction.Type.INSERT) {
+                tree = tree.add(rTreeAction.data)
+            } else if (rTreeAction.type == MutatingRTreeAction.Type.DELETE) {
+                tree = tree.delete(rTreeAction.data)
+            } else if (rTreeAction.type == MutatingRTreeAction.Type.REBUILD) {
+                tree = rTreeBuilder.create()
             }
 
-            @Override
-            void onError(Throwable exception) {
+        } as Action1
+    }
 
-                log.error(exception.getMessage(), exception)
-            }
+    @Override
+    void removeAllPlaces() {
 
-            @Override
-            void onNext(final Entry<IdAssignedPlace, Point> entry) {
+        rTreeActionPublishSubject.onNext(new MutatingRTreeAction(type: MutatingRTreeAction.Type.REBUILD))
+    }
 
-                log.debug("adding place '${entry.value().name}' w/ coordinates [${entry.value().latitude},${entry.value().longitude}]")
-                tree = tree.add(entry)
-            }
-        })
+    @Override
+    void removePlace(String id) {
+
+        getPlace(id).subscribe { IdAssignedPlace idAssignedPlace ->
+
+            rTreeActionPublishSubject.onNext(new MutatingRTreeAction(type: MutatingRTreeAction.Type.DELETE,
+                    data: Factories.defaultFactory().createEntry(idAssignedPlace,
+                            Geometries.pointGeographic(idAssignedPlace.place.longitude, idAssignedPlace.place.latitude))))
+        } as Action1
     }
 
     @Override
@@ -71,12 +96,12 @@ class RTreePlacesService implements PlacesService {
 
         final String id = UUID.randomUUID().toString()
 
-        subject.onNext(Factories.defaultFactory().createEntry(new IdAssignedPlace(id: id, place: place), Geometries.pointGeographic(place.longitude, place.latitude)))
+        Entry<IdAssignedPlace,Point> entryToInsert = Factories.defaultFactory().createEntry(new IdAssignedPlace(id: id, place: place),
+                Geometries.pointGeographic(place.longitude, place.latitude))
 
-        Observable.defer({
+        rTreeActionPublishSubject.onNext(new MutatingRTreeAction(type: MutatingRTreeAction.Type.INSERT, data: entryToInsert))
 
-            Observable.just(id)
-        }).bindExec()
+        Observable.just(id).bindExec()
     }
 
     @Override
@@ -125,12 +150,9 @@ class RTreePlacesService implements PlacesService {
     }
 
     @Override
-    Observable<Integer> getNumberOfStoredPlaces() {
+    Integer getNumberOfStoredPlaces() {
 
-        Observable.defer({
-
-            Observable.just(tree.size())
-        }).bindExec()
+        tree.size()
     }
 
     @Override

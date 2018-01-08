@@ -9,6 +9,21 @@ interface PlacesService {
 
     /**
      *
+     * Destroys and re-creates the RTree.
+     *
+     */
+    void removeAllPlaces()
+
+    /**
+     *
+     * Removes a place by its generated UUID.
+     *
+     * @param id
+     */
+    void removePlace(String id)
+
+    /**
+     *
      * Saves a place in the ephemeral, in-memory rtree.
      *
      * @param place
@@ -45,7 +60,7 @@ interface PlacesService {
      *
      * @return
      */
-    Observable<Integer> getNumberOfStoredPlaces()
+    Integer getNumberOfStoredPlaces()
 
     /**
      *
