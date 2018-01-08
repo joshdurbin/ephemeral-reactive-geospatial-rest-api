@@ -5,8 +5,8 @@ import com.github.davidmoten.rtree.Entry
 import com.github.davidmoten.rtree.Factories
 import com.github.davidmoten.rtree.RTree
 import com.github.davidmoten.rtree.geometry.Geometries
+import com.github.davidmoten.rtree.geometry.Geometry
 import com.github.davidmoten.rtree.geometry.Point
-import com.github.davidmoten.rtree.geometry.Rectangle
 import com.google.inject.Inject
 import com.google.inject.Singleton
 import groovy.transform.CompileStatic
@@ -14,6 +14,7 @@ import groovy.util.logging.Slf4j
 import io.durbs.rtree.places.domain.IdAssignedPlace
 import io.durbs.rtree.places.domain.Place
 import io.durbs.rtree.places.domain.PlaceWithDistance
+import io.durbs.rtree.places.error.NoSuchPlaceException
 import rx.Observable
 import rx.Subscriber
 import rx.functions.Func1
@@ -98,8 +99,7 @@ class RTreePlacesService implements PlacesService {
 
         if (tree.empty) {
 
-            Observable.error(new IllegalArgumentException('There are no places in the rtree to randomly select.'))
-            .bindExec()
+            throw new NoSuchPlaceException()
 
         } else {
 
@@ -136,8 +136,6 @@ class RTreePlacesService implements PlacesService {
     @Override
     Observable<PlaceWithDistance> findPlacesNear(Double latitude, Double longitude, Double searchRadius) {
 
-        final Point geographicPoint = Geometries.pointGeographic(latitude, longitude)
-
         final Position queryPosition = Position.create(latitude, longitude)
 
         final Position north = queryPosition.predict(searchRadius, 0)
@@ -145,25 +143,22 @@ class RTreePlacesService implements PlacesService {
         final Position east = queryPosition.predict(searchRadius, 90)
         final Position west = queryPosition.predict(searchRadius, 270)
 
-        final Rectangle searchArea = Geometries.rectangle(west.getLon(), south.getLat(), east.getLon(), north.getLat())
+        final Geometry searchArea = Geometries.rectangle(west.getLon(), south.getLat(), east.getLon(), north.getLat())
 
         tree.search(searchArea)
             .filter({ Entry<IdAssignedPlace, Point> entry ->
 
-                final Point point = entry.geometry()
-                final Position position = Position.create(point.y(), point.x())
+                queryPosition.getDistanceToKm(Position.create(entry.geometry().y(), entry.geometry().x())) < searchRadius
 
-                queryPosition.getDistanceToKm(position) < searchRadius
             } as Func1)
             .limit(placesConfig.maxResults)
             .map({ Entry<IdAssignedPlace, Point> entry ->
 
-                entry.value()
-            } as Func1)
-            .map( { IdAssignedPlace place ->
+                final Double distance = queryPosition.getDistanceToKm(Position.create(entry.geometry().y(), entry.geometry().x()))
+                final Double roundedDistance = distance.round(Constants.DISTANCE_ROUNDING_DECIMAL_PLACES)
 
-                new PlaceWithDistance(distance: Geometries.pointGeographic(place.latitude, place.longitude).distance(geographicPoint) * Constants.FIND_NEAR_DISTANCE_CALCULATION_MULTIPLIER,
-                    place: place)
+                new PlaceWithDistance(distance: roundedDistance,
+                        place: entry.value())
             } as Func1)
             .bindExec()
     }

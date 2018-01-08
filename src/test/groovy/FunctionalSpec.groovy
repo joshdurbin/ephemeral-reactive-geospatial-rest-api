@@ -24,7 +24,7 @@ class FunctionalSpec extends Specification {
     static Place sutroBaths
     static Place twinPeaks
 
-    static Double distanceBetweenExploratoriumAndSutroBathsInMeters = 11197.12523687278
+    static Double distanceBetweenExploratoriumAndSutroBathsInMeters = 9.91
 
     static {
         exploratorium = new Place(name: 'Exploratorium',
@@ -155,7 +155,7 @@ class FunctionalSpec extends Specification {
 
         then:
         (jsonSlurper.parseText(response.body.text) as List).size() == 2
-        (jsonSlurper.parseText(response.body.text) as List).first().get('distance') == 0.0
+        (jsonSlurper.parseText(response.body.text) as List).first().get('distance') == 0
         (jsonSlurper.parseText(response.body.text) as List).first().get('name') == exploratorium.name
         (jsonSlurper.parseText(response.body.text) as List).last().get('distance') == distanceBetweenExploratoriumAndSutroBathsInMeters
         (jsonSlurper.parseText(response.body.text) as List).last().get('name') == sutroBaths.name
@@ -168,7 +168,7 @@ class FunctionalSpec extends Specification {
 
         then:
         (jsonSlurper.parseText(response.body.text) as List).size() == 2
-        (jsonSlurper.parseText(response.body.text) as List).first().get('distance') == 0.0
+        (jsonSlurper.parseText(response.body.text) as List).first().get('distance') == 0
         (jsonSlurper.parseText(response.body.text) as List).first().get('name') == sutroBaths.name
         (jsonSlurper.parseText(response.body.text) as List).last().get('distance') == distanceBetweenExploratoriumAndSutroBathsInMeters
         (jsonSlurper.parseText(response.body.text) as List).last().get('name') == exploratorium.name
@@ -181,7 +181,7 @@ class FunctionalSpec extends Specification {
 
         then:
         (jsonSlurper.parseText(response.body.text) as List).size() == 1
-        (jsonSlurper.parseText(response.body.text) as List).first().get('distance') == 0.0
+        (jsonSlurper.parseText(response.body.text) as List).first().get('distance') == 0
         (jsonSlurper.parseText(response.body.text) as List).first().get('name') == exploratorium.name
     }
 
@@ -192,7 +192,7 @@ class FunctionalSpec extends Specification {
 
         then:
         (jsonSlurper.parseText(response.body.text) as List).size() == 1
-        (jsonSlurper.parseText(response.body.text) as List).first().get('distance') == 0.0
+        (jsonSlurper.parseText(response.body.text) as List).first().get('distance') == 0
         (jsonSlurper.parseText(response.body.text) as List).first().get('name') == sutroBaths.name
     }
 

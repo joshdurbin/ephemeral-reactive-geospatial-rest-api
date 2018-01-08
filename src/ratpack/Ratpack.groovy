@@ -1,3 +1,4 @@
+import com.github.gregwhitaker.ratpack.error.ErrorModule
 import io.durbs.rtree.places.Constants
 import io.durbs.rtree.places.PlacesConfig
 import io.durbs.rtree.places.PlacesHandlerChain
@@ -17,6 +18,7 @@ ratpack {
 
     RxRatpack.initialize()
     module PlacesModule
+    module ErrorModule
   }
 
   handlers {

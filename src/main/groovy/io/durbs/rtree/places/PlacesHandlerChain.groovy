@@ -6,9 +6,13 @@ import groovy.util.logging.Slf4j
 import io.durbs.rtree.places.domain.IdAssignedPlace
 import io.durbs.rtree.places.domain.Place
 import io.durbs.rtree.places.domain.PlaceWithDistance
+import io.durbs.rtree.places.error.PlaceSubmissionValidationException
 import ratpack.groovy.handling.GroovyChainAction
 import ratpack.jackson.Jackson
 import rx.functions.Func1
+
+import javax.validation.ConstraintViolation
+import javax.validation.Validator
 
 import static ratpack.jackson.Jackson.fromJson
 
@@ -21,6 +25,9 @@ class PlacesHandlerChain extends GroovyChainAction {
 
     @Inject
     PlacesService placesService
+
+    @Inject
+    Validator validator
 
     @Override
     void execute() throws Exception {
@@ -46,7 +53,13 @@ class PlacesHandlerChain extends GroovyChainAction {
                             .observe()
                             .flatMap ({ Place place ->
 
-                        placesService.savePlace(place)
+                        Set<ConstraintViolation<Place>> violations = validator.validate(place)
+
+                        if (!violations.empty) {
+                            throw new PlaceSubmissionValidationException(violations)
+                        } else {
+                            placesService.savePlace(place)
+                        }
 
                     } as Func1)
                             .single()
@@ -73,10 +86,7 @@ class PlacesHandlerChain extends GroovyChainAction {
 
             placesService
                 .getRandomPlace()
-                .doOnError { Throwable throwable ->
-
-                    error(throwable)
-                }
+                .single()
                 .subscribe { IdAssignedPlace place ->
 
                 render Jackson.json(place)

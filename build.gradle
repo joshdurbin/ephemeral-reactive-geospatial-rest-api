@@ -25,14 +25,23 @@ repositories {
 
 dependencies {
 
-  runtime 'org.slf4j:slf4j-simple:1.7.25'
+  // non-blocking sl4fj impl
+  runtime group: 'org.apache.logging.log4j', name: 'log4j-slf4j-impl', version: '2.10.0'
+  runtime group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.10.0'
+  runtime group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.10.0'
+  runtime group: 'com.lmax', name: 'disruptor', version: '3.3.7'
 
+  // required by hibernate validator
+  runtime group: 'org.glassfish', name: 'javax.el', version: '3.0.1-b09'
+
+  compile group: 'org.hibernate', name: 'hibernate-validator', version: '6.0.7.Final'
   compile group: 'com.github.davidmoten', name: 'grumpy-core', version: '0.2.3'
   compile group: 'com.github.davidmoten', name: 'rtree', version: '0.8.0.4'
+  compile group: 'com.github.gregwhitaker', name: 'ratpack-error', version: '1.5.0'
 
   compile ratpack.dependency('rx')
 
-  testCompile 'org.spockframework:spock-core:1.0-groovy-2.4'
+  testCompile group: 'org.spockframework', name: 'spock-core', version: '1.0-groovy-2.4'
 }
 
 docker {
