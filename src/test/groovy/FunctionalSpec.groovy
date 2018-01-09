@@ -83,7 +83,7 @@ class FunctionalSpec extends Specification {
         createResponse.statusCode == 200
 
         when:
-        def id = jsonSlurper.parseText(createResponse.body.text).get('id')
+        def id = jsonSlurper.parseText(createResponse.body.text).id
         def getResponse = applicationUnderTest.httpClient.get("${Constants.BASE_API_RESOURCE_PATH_WITH_STARTING_SLASH}/${id}")
 
         then:
@@ -123,7 +123,7 @@ class FunctionalSpec extends Specification {
         createResponse.statusCode == 200
 
         when:
-        def id = jsonSlurper.parseText(createResponse.body.text).get('id')
+        def id = jsonSlurper.parseText(createResponse.body.text).id
         def getResponse = applicationUnderTest.httpClient.get("${Constants.BASE_API_RESOURCE_PATH_WITH_STARTING_SLASH}/${id}")
 
         then:
@@ -155,10 +155,10 @@ class FunctionalSpec extends Specification {
 
         then:
         (jsonSlurper.parseText(response.body.text) as List).size() == 2
-        (jsonSlurper.parseText(response.body.text) as List).first().get('distance') == 0
-        (jsonSlurper.parseText(response.body.text) as List).first().get('name') == exploratorium.name
-        (jsonSlurper.parseText(response.body.text) as List).last().get('distance') == distanceBetweenExploratoriumAndSutroBathsInKilometers
-        (jsonSlurper.parseText(response.body.text) as List).last().get('name') == sutroBaths.name
+        (jsonSlurper.parseText(response.body.text) as List).first().distance == 0
+        (jsonSlurper.parseText(response.body.text) as List).first().name == exploratorium.name
+        (jsonSlurper.parseText(response.body.text) as List).last().distance == distanceBetweenExploratoriumAndSutroBathsInKilometers
+        (jsonSlurper.parseText(response.body.text) as List).last().name == sutroBaths.name
     }
 
     void "10km geo query from sutro baths should return itself and the exploratorium"() {
@@ -168,10 +168,10 @@ class FunctionalSpec extends Specification {
 
         then:
         (jsonSlurper.parseText(response.body.text) as List).size() == 2
-        (jsonSlurper.parseText(response.body.text) as List).first().get('distance') == 0
-        (jsonSlurper.parseText(response.body.text) as List).first().get('name') == sutroBaths.name
-        (jsonSlurper.parseText(response.body.text) as List).last().get('distance') == distanceBetweenExploratoriumAndSutroBathsInKilometers
-        (jsonSlurper.parseText(response.body.text) as List).last().get('name') == exploratorium.name
+        (jsonSlurper.parseText(response.body.text) as List).first().distance == 0
+        (jsonSlurper.parseText(response.body.text) as List).first().name == sutroBaths.name
+        (jsonSlurper.parseText(response.body.text) as List).last().distance == distanceBetweenExploratoriumAndSutroBathsInKilometers
+        (jsonSlurper.parseText(response.body.text) as List).last().name == exploratorium.name
     }
 
     void "5km geo query from the exploratorium should return itself only"() {
@@ -181,8 +181,8 @@ class FunctionalSpec extends Specification {
 
         then:
         (jsonSlurper.parseText(response.body.text) as List).size() == 1
-        (jsonSlurper.parseText(response.body.text) as List).first().get('distance') == 0
-        (jsonSlurper.parseText(response.body.text) as List).first().get('name') == exploratorium.name
+        (jsonSlurper.parseText(response.body.text) as List).first().distance == 0
+        (jsonSlurper.parseText(response.body.text) as List).first().name == exploratorium.name
     }
 
     void "5km geo query from sutro baths should return itself only"() {
@@ -192,8 +192,8 @@ class FunctionalSpec extends Specification {
 
         then:
         (jsonSlurper.parseText(response.body.text) as List).size() == 1
-        (jsonSlurper.parseText(response.body.text) as List).first().get('distance') == 0
-        (jsonSlurper.parseText(response.body.text) as List).first().get('name') == sutroBaths.name
+        (jsonSlurper.parseText(response.body.text) as List).first().distance == 0
+        (jsonSlurper.parseText(response.body.text) as List).first().name == sutroBaths.name
     }
 
     void "5km geo query twin peaks should return the exploratorium"() {
@@ -203,38 +203,38 @@ class FunctionalSpec extends Specification {
 
         then:
         (jsonSlurper.parseText(response.body.text) as List).size() == 1
-        (jsonSlurper.parseText(response.body.text) as List).first().get('name') == exploratorium.name
+        (jsonSlurper.parseText(response.body.text) as List).first().name == exploratorium.name
     }
 
     void "delete a single place"() {
 
         when:
-        def getPlacesResponse = applicationUnderTest.httpClient.get("$Constants.BASE_API_RESOURCE_PATH_WITH_STARTING_SLASH")
+        def getPlacesResponse = applicationUnderTest.httpClient.get(Constants.BASE_API_RESOURCE_PATH_WITH_STARTING_SLASH)
 
         then:
         (jsonSlurper.parseText(getPlacesResponse.body.text) as List).size() == 2
 
         when:
-        def placeIdToDelete = (jsonSlurper.parseText(getPlacesResponse.body.text) as List).first().get('id')
+        def placeIdToDelete = (jsonSlurper.parseText(getPlacesResponse.body.text) as List).first().id
         applicationUnderTest.httpClient.delete("$Constants.BASE_API_RESOURCE_PATH_WITH_STARTING_SLASH/${placeIdToDelete}")
-        def getPlacesResponseFollowingDeletion = applicationUnderTest.httpClient.get("$Constants.BASE_API_RESOURCE_PATH_WITH_STARTING_SLASH")
+        def getPlacesResponseFollowingDeletion = applicationUnderTest.httpClient.get(Constants.BASE_API_RESOURCE_PATH_WITH_STARTING_SLASH)
 
         then:
         (jsonSlurper.parseText(getPlacesResponseFollowingDeletion.body.text) as List).size() == 1
-        (jsonSlurper.parseText(getPlacesResponseFollowingDeletion.body.text) as List).first().get('id') != placeIdToDelete
+        (jsonSlurper.parseText(getPlacesResponseFollowingDeletion.body.text) as List).first().id != placeIdToDelete
     }
 
     void "delete all places"() {
 
         when:
-        def getPlacesResponse = applicationUnderTest.httpClient.get("$Constants.BASE_API_RESOURCE_PATH_WITH_STARTING_SLASH")
+        def getPlacesResponse = applicationUnderTest.httpClient.get(Constants.BASE_API_RESOURCE_PATH_WITH_STARTING_SLASH)
 
         then:
         (jsonSlurper.parseText(getPlacesResponse.body.text) as List).size() == 1
 
         when:
         applicationUnderTest.httpClient.delete("$Constants.BASE_API_RESOURCE_PATH_WITH_STARTING_SLASH/deleteAllPlaces")
-        def getPlacesResponseFollowingDeletion = applicationUnderTest.httpClient.get("$Constants.BASE_API_RESOURCE_PATH_WITH_STARTING_SLASH")
+        def getPlacesResponseFollowingDeletion = applicationUnderTest.httpClient.get(Constants.BASE_API_RESOURCE_PATH_WITH_STARTING_SLASH)
 
         then:
         (jsonSlurper.parseText(getPlacesResponseFollowingDeletion.body.text) as List).size() == 0
