@@ -61,7 +61,7 @@ class RTreePlacesService implements PlacesService {
         tree = rTreeBuilder.create()
 
         rTreeActionPublishSubject = PublishSubject.create()
-        rTreeActionPublishSubject.subscribe { MutatingRTreeAction rTreeAction ->
+        rTreeActionPublishSubject.subscribe({ MutatingRTreeAction rTreeAction ->
 
             if (rTreeAction.type == MutatingRTreeAction.Type.INSERT) {
                 tree = tree.add(rTreeAction.data)
@@ -71,7 +71,7 @@ class RTreePlacesService implements PlacesService {
                 tree = rTreeBuilder.create()
             }
 
-        } as Action1
+        } as Action1)
     }
 
     @Override
@@ -165,9 +165,7 @@ class RTreePlacesService implements PlacesService {
         final Position east = queryPosition.predict(searchRadius, 90)
         final Position west = queryPosition.predict(searchRadius, 270)
 
-        final Geometry searchArea = Geometries.rectangle(west.getLon(), south.getLat(), east.getLon(), north.getLat())
-
-        tree.search(searchArea)
+        tree.search(Geometries.rectangle(west.getLon(), south.getLat(), east.getLon(), north.getLat()))
             .filter({ Entry<IdAssignedPlace, Point> entry ->
 
                 queryPosition.getDistanceToKm(Position.create(entry.geometry().y(), entry.geometry().x())) < searchRadius

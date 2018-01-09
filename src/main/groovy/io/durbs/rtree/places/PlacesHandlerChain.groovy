@@ -74,7 +74,7 @@ class PlacesHandlerChain extends GroovyChainAction {
         delete('deleteAllPlaces') {
 
             placesService.removeAllPlaces()
-            redirect(Constants.BASE_API_RESOURCE_PATH)
+            redirect(Constants.BASE_API_RESOURCE_PATH_WITH_STARTING_SLASH)
         }
 
         get('count') {
@@ -151,7 +151,7 @@ class PlacesHandlerChain extends GroovyChainAction {
                 delete {
 
                     placesService.removePlace(pathTokens[Constants.TOKEN_PLACE_ID])
-                    redirect(Constants.BASE_API_RESOURCE_PATH)
+                    redirect(Constants.BASE_API_RESOURCE_PATH_WITH_STARTING_SLASH)
                 }
             }
         }

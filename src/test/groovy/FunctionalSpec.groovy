@@ -206,21 +206,37 @@ class FunctionalSpec extends Specification {
         (jsonSlurper.parseText(response.body.text) as List).first().get('name') == exploratorium.name
     }
 
-//    void "delete all places redirect should return array of size zero"() {
-//
-//        when:
-//        def getPlacesResponse = applicationUnderTest.httpClient.get("$Constants.BASE_API_RESOURCE_PATH_WITH_STARTING_SLASH")
-//
-//        then:
-//        (jsonSlurper.parseText(getPlacesResponse.body.text) as List).size() == 2
-//
-//        when:
-//        def placeIdToDelete = (jsonSlurper.parseText(getPlacesResponse.body.text) as List).first().get('id')
-//
-//        then:
-//        def deletePlaceResponse = applicationUnderTest.httpClient.delete("$Constants.BASE_API_RESOURCE_PATH_WITH_STARTING_SLASH/${placeIdToDelete}")
-//
-//        then:
-//        deletePlaceResponse.statusCode == 404
-//    }
+    void "delete a single place"() {
+
+        when:
+        def getPlacesResponse = applicationUnderTest.httpClient.get("$Constants.BASE_API_RESOURCE_PATH_WITH_STARTING_SLASH")
+
+        then:
+        (jsonSlurper.parseText(getPlacesResponse.body.text) as List).size() == 2
+
+        when:
+        def placeIdToDelete = (jsonSlurper.parseText(getPlacesResponse.body.text) as List).first().get('id')
+        applicationUnderTest.httpClient.delete("$Constants.BASE_API_RESOURCE_PATH_WITH_STARTING_SLASH/${placeIdToDelete}")
+        def getPlacesResponseFollowingDeletion = applicationUnderTest.httpClient.get("$Constants.BASE_API_RESOURCE_PATH_WITH_STARTING_SLASH")
+
+        then:
+        (jsonSlurper.parseText(getPlacesResponseFollowingDeletion.body.text) as List).size() == 1
+        (jsonSlurper.parseText(getPlacesResponseFollowingDeletion.body.text) as List).first().get('id') != placeIdToDelete
+    }
+
+    void "delete all places"() {
+
+        when:
+        def getPlacesResponse = applicationUnderTest.httpClient.get("$Constants.BASE_API_RESOURCE_PATH_WITH_STARTING_SLASH")
+
+        then:
+        (jsonSlurper.parseText(getPlacesResponse.body.text) as List).size() == 1
+
+        when:
+        applicationUnderTest.httpClient.delete("$Constants.BASE_API_RESOURCE_PATH_WITH_STARTING_SLASH/deleteAllPlaces")
+        def getPlacesResponseFollowingDeletion = applicationUnderTest.httpClient.get("$Constants.BASE_API_RESOURCE_PATH_WITH_STARTING_SLASH")
+
+        then:
+        (jsonSlurper.parseText(getPlacesResponseFollowingDeletion.body.text) as List).size() == 0
+    }
 }
