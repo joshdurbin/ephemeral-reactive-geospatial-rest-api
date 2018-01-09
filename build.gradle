@@ -41,7 +41,7 @@ dependencies {
 
   compile ratpack.dependency('rx')
 
-  testCompile group: 'org.spockframework', name: 'spock-core', version: '1.0-groovy-2.4'
+  testCompile group: 'org.spockframework', name: 'spock-core', version: '1.1-groovy-2.4'
 }
 
 docker {
@@ -61,6 +61,6 @@ docker {
     maintainer = 'Josh Durbin "durbinjo593@gmail.com"'
     port = 5050
     baseImage = 'anapsix/alpine-java:8_server-jre'
-    tag = 'joshdurbin/ephemeral-reactive-geospatial-rest-api:latest'
+    tag = "joshdurbin/ephemeral-reactive-geospatial-rest-api:${gitVersion()}"
   }
 }
