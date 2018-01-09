@@ -61,6 +61,6 @@ docker {
     maintainer = 'Josh Durbin "durbinjo593@gmail.com"'
     port = 5050
     baseImage = 'anapsix/alpine-java:8_server-jre'
-    tag = "joshdurbin/ephemeral-reactive-geospatial-rest-api:${gitVersion().minus('.dirty')}"
+    tag = "joshdurbin/ephemeral-reactive-geospatial-rest-api:latest"
   }
 }
