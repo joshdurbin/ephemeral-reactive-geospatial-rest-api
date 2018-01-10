@@ -5,7 +5,6 @@ import com.github.davidmoten.rtree.Entry
 import com.github.davidmoten.rtree.Factories
 import com.github.davidmoten.rtree.RTree
 import com.github.davidmoten.rtree.geometry.Geometries
-import com.github.davidmoten.rtree.geometry.Geometry
 import com.github.davidmoten.rtree.geometry.Point
 import com.google.inject.Inject
 import com.google.inject.Singleton
@@ -15,7 +14,6 @@ import groovy.util.logging.Slf4j
 import io.durbs.rtree.places.domain.IdAssignedPlace
 import io.durbs.rtree.places.domain.Place
 import io.durbs.rtree.places.domain.PlaceWithDistance
-import io.durbs.rtree.places.error.NoSuchPlaceException
 import rx.Observable
 import rx.functions.Action1
 import rx.functions.Func1
@@ -107,35 +105,24 @@ class RTreePlacesService implements PlacesService {
     @Override
     Observable<IdAssignedPlace> getPlace(String id) {
 
-        tree.entries()
-            .filter({ Entry<IdAssignedPlace, Point> entry ->
+        getAllPlaces()
+            .filter({ IdAssignedPlace idAssignedPlace ->
 
-                entry.value().id == id
+                idAssignedPlace.id == id
             } as Func1)
-            .map({ Entry<IdAssignedPlace, Point> entry ->
-
-                entry.value()
-            })
             .bindExec()
     }
 
     @Override
     Observable<IdAssignedPlace> getRandomPlace() {
 
-        if (tree.empty) {
+        tree.entries()
+                .elementAt(new Random().nextInt(tree.size()))
+                .map({ Entry<IdAssignedPlace, Point> entry ->
 
-            throw new NoSuchPlaceException()
-
-        } else {
-
-            tree.entries()
-                    .elementAt(new Random().nextInt(tree.size()))
-                    .map({ Entry<IdAssignedPlace, Point> entry ->
-
-                entry.value()
-            } as Func1)
-            .bindExec()
-        }
+            entry.value()
+        } as Func1)
+        .bindExec()
     }
 
     @Override
@@ -166,20 +153,18 @@ class RTreePlacesService implements PlacesService {
         final Position west = queryPosition.predict(searchRadius, 270)
 
         tree.search(Geometries.rectangle(west.getLon(), south.getLat(), east.getLon(), north.getLat()))
-            .filter({ Entry<IdAssignedPlace, Point> entry ->
+            .map({ Entry<IdAssignedPlace, Point> entry ->
 
-                queryPosition.getDistanceToKm(Position.create(entry.geometry().y(), entry.geometry().x())) < searchRadius
+                new PlaceWithDistance(
+                        distance: queryPosition.getDistanceToKm(Position.create(entry.geometry().y(), entry.geometry().x())).round(Constants.DISTANCE_ROUNDING_DECIMAL_PLACES),
+                        place: entry.value())
+            } as Func1)
+            .filter({ PlaceWithDistance placeWithDistance ->
+
+                placeWithDistance.distance < searchRadius
 
             } as Func1)
             .limit(placesConfig.maxResults)
-            .map({ Entry<IdAssignedPlace, Point> entry ->
-
-                final Double distance = queryPosition.getDistanceToKm(Position.create(entry.geometry().y(), entry.geometry().x()))
-                final Double roundedDistance = distance.round(Constants.DISTANCE_ROUNDING_DECIMAL_PLACES)
-
-                new PlaceWithDistance(distance: roundedDistance,
-                        place: entry.value())
-            } as Func1)
             .bindExec()
     }
 }
