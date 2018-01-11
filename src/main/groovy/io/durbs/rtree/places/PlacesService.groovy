@@ -1,6 +1,7 @@
 package io.durbs.rtree.places
 
 import io.durbs.rtree.places.domain.IdAssignedPlace
+import io.durbs.rtree.places.domain.PaginatedPlaces
 import io.durbs.rtree.places.domain.Place
 import io.durbs.rtree.places.domain.PlaceWithDistance
 import rx.Observable
@@ -50,17 +51,10 @@ interface PlacesService {
      *
      * Gets all places in the ephemeral, in-memory rtree.
      *
+     * @param pageNumber
      * @return
      */
-    Observable<IdAssignedPlace> getAllPlaces()
-
-    /**
-     *
-     * Gets the number of places in the ephemeral, in-memory rtree.
-     *
-     * @return
-     */
-    Integer getNumberOfStoredPlaces()
+    Observable<PaginatedPlaces<IdAssignedPlace>> getAllPlaces(Integer pageNumber)
 
     /**
      *
@@ -69,8 +63,9 @@ interface PlacesService {
      * @param latitude
      * @param longitude
      * @param searchRadius
+     * @param pageNumber
      * @return
      */
-    Observable<PlaceWithDistance> findPlacesNear(Double latitude, Double longitude, Double searchRadius)
+    Observable<PaginatedPlaces<PlaceWithDistance>> findPlacesNear(Double latitude, Double longitude, Double searchRadius, Integer pageNumber)
 
 }

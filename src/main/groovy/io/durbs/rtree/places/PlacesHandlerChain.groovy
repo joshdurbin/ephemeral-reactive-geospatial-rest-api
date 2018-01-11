@@ -4,8 +4,8 @@ import com.google.inject.Inject
 import com.google.inject.Singleton
 import groovy.util.logging.Slf4j
 import io.durbs.rtree.places.domain.IdAssignedPlace
+import io.durbs.rtree.places.domain.PaginatedPlaces
 import io.durbs.rtree.places.domain.Place
-import io.durbs.rtree.places.domain.PlaceWithDistance
 import io.durbs.rtree.places.error.PlaceSubmissionValidationException
 import ratpack.groovy.handling.GroovyChainAction
 import ratpack.jackson.Jackson
@@ -38,12 +38,20 @@ class PlacesHandlerChain extends GroovyChainAction {
 
                 get {
 
-                    placesService
-                            .getAllPlaces()
-                            .toList()
-                            .subscribe { List<IdAssignedPlace> places ->
+                    final Integer pageNumberParam
 
-                        render Jackson.json(places)
+                    if (context.request.queryParams.get(Constants.QUERY_PARAM_PAGE)?.isNumber()) {
+                        pageNumberParam = (context.request.queryParams.get(Constants.QUERY_PARAM_PAGE) as Integer).abs()
+                    } else {
+                        pageNumberParam = Constants.DEFAULT_FIRST_PAGE
+                    }
+
+                    placesService
+                            .getAllPlaces(pageNumberParam)
+                            .singleOrDefault(new PaginatedPlaces(totalPlaces: 0, places: []))
+                            .subscribe { PaginatedPlaces paginatedPlaces ->
+
+                        render(Jackson.json(paginatedPlaces))
                     }
                 }
 
@@ -77,19 +85,14 @@ class PlacesHandlerChain extends GroovyChainAction {
             redirect(Constants.BASE_API_RESOURCE_PATH_WITH_STARTING_SLASH)
         }
 
-        get('count') {
-
-            render "${placesService.getNumberOfStoredPlaces()}"
-        }
-
         get('random') {
 
             placesService
                     .getRandomPlace()
-                    .single()
+                    .firstOrDefault(null)
                     .subscribe { IdAssignedPlace place ->
 
-                render Jackson.json(place)
+                place ? render(Jackson.json(place)) : clientError(400)
             }
         }
 
@@ -98,12 +101,20 @@ class PlacesHandlerChain extends GroovyChainAction {
             final Double latitude = pathTokens[Constants.TOKEN_LATITUDE] as Double
             final Double longitude = pathTokens[Constants.TOKEN_LONGITUDE] as Double
 
-            placesService
-                    .findPlacesNear(latitude, longitude, placesConfig.defaultSearchRadius)
-                    .toList()
-                    .subscribe { List<PlaceWithDistance> places ->
+            final Integer pageNumberParam
 
-                render Jackson.json(places)
+            if (context.request.queryParams.get(Constants.QUERY_PARAM_PAGE)?.isNumber()) {
+                pageNumberParam = (context.request.queryParams.get(Constants.QUERY_PARAM_PAGE) as Integer).abs()
+            } else {
+                pageNumberParam = Constants.DEFAULT_FIRST_PAGE
+            }
+
+            placesService
+                    .findPlacesNear(latitude, longitude, placesConfig.defaultSearchRadius, pageNumberParam)
+                    .single()
+                    .subscribe { PaginatedPlaces paginatedPlaces ->
+
+                render(Jackson.json(paginatedPlaces))
             }
         }
 
@@ -121,15 +132,20 @@ class PlacesHandlerChain extends GroovyChainAction {
                 queryRadius = placesConfig.defaultSearchRadius
             }
 
+            final Integer pageNumberParam
+
+            if (context.request.queryParams.get(Constants.QUERY_PARAM_PAGE)?.isNumber()) {
+                pageNumberParam = (context.request.queryParams.get(Constants.QUERY_PARAM_PAGE) as Integer).abs()
+            } else {
+                pageNumberParam = Constants.DEFAULT_FIRST_PAGE
+            }
+
             placesService
-                    .findPlacesNear(latitude, longitude, queryRadius)
-                    .toSortedList( { PlaceWithDistance firstPlace, PlaceWithDistance secondPlace ->
+                    .findPlacesNear(latitude, longitude, queryRadius, pageNumberParam)
+                    .single()
+                    .subscribe { PaginatedPlaces paginatedPlaces ->
 
-                (firstPlace.distance - secondPlace.distance).intValue()
-            })
-                    .subscribe { List<PlaceWithDistance> places ->
-
-                render Jackson.json(places)
+                render(Jackson.json(paginatedPlaces))
             }
         }
 
@@ -141,10 +157,10 @@ class PlacesHandlerChain extends GroovyChainAction {
 
                     placesService
                             .getPlace(pathTokens[Constants.TOKEN_PLACE_ID])
-                            .single()
+                            .singleOrDefault(null)
                             .subscribe { IdAssignedPlace place ->
 
-                        render Jackson.json(place)
+                        place ? render(Jackson.json(place)) : clientError(404)
                     }
                 }
 

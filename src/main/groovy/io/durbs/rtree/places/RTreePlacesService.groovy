@@ -12,11 +12,13 @@ import groovy.transform.Canonical
 import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
 import io.durbs.rtree.places.domain.IdAssignedPlace
+import io.durbs.rtree.places.domain.PaginatedPlaces
 import io.durbs.rtree.places.domain.Place
 import io.durbs.rtree.places.domain.PlaceWithDistance
 import rx.Observable
 import rx.functions.Action1
 import rx.functions.Func1
+import rx.functions.Func2
 import rx.subjects.PublishSubject
 
 @Slf4j
@@ -105,45 +107,62 @@ class RTreePlacesService implements PlacesService {
     @Override
     Observable<IdAssignedPlace> getPlace(String id) {
 
-        getAllPlaces()
-            .filter({ IdAssignedPlace idAssignedPlace ->
+        tree.entries().filter({ Entry<IdAssignedPlace, Point> entry ->
 
-                idAssignedPlace.id == id
-            } as Func1)
-            .bindExec()
+            entry.value().id == id
+        } as Func1)
+        .map({ Entry<IdAssignedPlace, Point> entry ->
+
+            entry.value()
+        } as Func1)
+        .bindExec()
     }
 
     @Override
     Observable<IdAssignedPlace> getRandomPlace() {
 
-        tree.entries()
-                .elementAt(new Random().nextInt(tree.size()))
-                .map({ Entry<IdAssignedPlace, Point> entry ->
+        Observable<IdAssignedPlace> randomPlaceObservable
 
-            entry.value()
-        } as Func1)
+        if (tree.empty) {
+            randomPlaceObservable = Observable.empty()
+        } else {
+            randomPlaceObservable = tree.entries()
+                    .elementAt(new Random().nextInt(tree.size()))
+                    .map({ Entry<IdAssignedPlace, Point> entry ->
+
+                entry.value()
+            } as Func1)
+        }
+
+        randomPlaceObservable.bindExec()
+    }
+
+    @Override
+    Observable<PaginatedPlaces<IdAssignedPlace>> getAllPlaces(Integer pageNumber) {
+
+        final Observable<IdAssignedPlace> getAllIdAssignedPlacesObservable = tree
+            .entries()
+            .map({ Entry<IdAssignedPlace, Point> entry ->
+
+                entry.value()
+            } as Func1)
+
+        final Observable<Integer> totalNumberOfAllIdAssignedPlacesObservable = getAllIdAssignedPlacesObservable.count()
+
+        final Observable<List<IdAssignedPlace>> paginatedIdAssignedPlacesObservable = getAllIdAssignedPlacesObservable
+            .skip(placesConfig.maxResults * pageNumber)
+            .limit(placesConfig.maxResults)
+            .toList()
+
+        Observable.zip(totalNumberOfAllIdAssignedPlacesObservable, paginatedIdAssignedPlacesObservable, { Integer count, List<PlaceWithDistance> places ->
+
+            new PaginatedPlaces<IdAssignedPlace>(totalPlaces: count, places: places)
+        })
         .bindExec()
     }
 
     @Override
-    Observable<IdAssignedPlace> getAllPlaces() {
-
-        tree.entries().map({ Entry<IdAssignedPlace, Point> entry ->
-
-            entry.value()
-        } as Func1)
-        .limit(placesConfig.maxResults)
-        .bindExec()
-    }
-
-    @Override
-    Integer getNumberOfStoredPlaces() {
-
-        tree.size()
-    }
-
-    @Override
-    Observable<PlaceWithDistance> findPlacesNear(Double latitude, Double longitude, Double searchRadius) {
+    Observable<PaginatedPlaces<PlaceWithDistance>> findPlacesNear(Double latitude, Double longitude, Double searchRadius, Integer pageNumber) {
 
         final Position queryPosition = Position.create(latitude, longitude)
 
@@ -152,19 +171,28 @@ class RTreePlacesService implements PlacesService {
         final Position east = queryPosition.predict(searchRadius, 90)
         final Position west = queryPosition.predict(searchRadius, 270)
 
-        tree.search(Geometries.rectangle(west.getLon(), south.getLat(), east.getLon(), north.getLat()))
+        final Observable<Entry<IdAssignedPlace, Point>> queryObservable = tree.search(Geometries.rectangle(west.getLon(), south.getLat(), east.getLon(), north.getLat()))
+            .filter({ Entry<IdAssignedPlace, Point> entry ->
+                queryPosition.getDistanceToKm(Position.create(entry.geometry().y(), entry.geometry().x())).round(Constants.DISTANCE_ROUNDING_DECIMAL_PLACES) < searchRadius
+            } as Func1)
+
+        final Observable<PlaceWithDistance> sortedPlaceWithDistanceObservable = queryObservable
             .map({ Entry<IdAssignedPlace, Point> entry ->
 
                 new PlaceWithDistance(
                         distance: queryPosition.getDistanceToKm(Position.create(entry.geometry().y(), entry.geometry().x())).round(Constants.DISTANCE_ROUNDING_DECIMAL_PLACES),
                         place: entry.value())
             } as Func1)
-            .filter({ PlaceWithDistance placeWithDistance ->
-
-                placeWithDistance.distance < searchRadius
-
-            } as Func1)
+            .sorted({ PlaceWithDistance first, PlaceWithDistance second ->
+                Double.compare(first.distance, second.distance)
+            } as Func2)
+            .skip(placesConfig.maxResults * pageNumber)
             .limit(placesConfig.maxResults)
-            .bindExec()
+
+        Observable.zip(queryObservable.count(), sortedPlaceWithDistanceObservable.toList(), { Integer count, List<PlaceWithDistance> places ->
+
+            new PaginatedPlaces<PlaceWithDistance>(totalPlaces: count, places: places)
+        })
+        .bindExec()
     }
 }

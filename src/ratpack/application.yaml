@@ -1,6 +1,6 @@
 star: true
 minChildren: 2
 maxChildren: 4
-maxResults: 50
+maxResults: 25
 defaultSearchRadius: .5
-maxAllowableSearchRadius: 50
+maxAllowableSearchRadius: 10

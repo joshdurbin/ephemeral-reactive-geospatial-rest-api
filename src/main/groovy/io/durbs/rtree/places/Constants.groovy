@@ -12,4 +12,7 @@ class Constants {
 
     static final String BASE_API_RESOURCE_PATH = 'api/v0/places'
     static final String BASE_API_RESOURCE_PATH_WITH_STARTING_SLASH = "/${BASE_API_RESOURCE_PATH}"
+
+    static final String QUERY_PARAM_PAGE = 'p'
+    static final Integer DEFAULT_FIRST_PAGE = 0
 }
