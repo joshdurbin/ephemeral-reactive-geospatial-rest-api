@@ -11,8 +11,11 @@ class PlacesConfig {
     Integer minChildren
     Integer maxChildren
 
-    Integer maxResults
+    Integer maxResultsPerPage
 
     Double defaultSearchRadius
     Double maxAllowableSearchRadius
+
+    Integer findNearCoordinatePairObservableCacheDefaultSize
+    Integer findAllObservableCacheDefaultSize
 }

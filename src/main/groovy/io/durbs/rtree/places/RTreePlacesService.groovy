@@ -108,11 +108,9 @@ class RTreePlacesService implements PlacesService {
     Observable<IdAssignedPlace> getPlace(String id) {
 
         tree.entries().filter({ Entry<IdAssignedPlace, Point> entry ->
-
             entry.value().id == id
         } as Func1)
         .map({ Entry<IdAssignedPlace, Point> entry ->
-
             entry.value()
         } as Func1)
         .bindExec()
@@ -129,7 +127,6 @@ class RTreePlacesService implements PlacesService {
             randomPlaceObservable = tree.entries()
                     .elementAt(new Random().nextInt(tree.size()))
                     .map({ Entry<IdAssignedPlace, Point> entry ->
-
                 entry.value()
             } as Func1)
         }
@@ -143,15 +140,15 @@ class RTreePlacesService implements PlacesService {
         final Observable<IdAssignedPlace> getAllIdAssignedPlacesObservable = tree
             .entries()
             .map({ Entry<IdAssignedPlace, Point> entry ->
-
                 entry.value()
             } as Func1)
+            .cacheWithInitialCapacity(placesConfig.findAllObservableCacheDefaultSize)
 
         final Observable<Integer> totalNumberOfAllIdAssignedPlacesObservable = getAllIdAssignedPlacesObservable.count()
 
         final Observable<List<IdAssignedPlace>> paginatedIdAssignedPlacesObservable = getAllIdAssignedPlacesObservable
-            .skip(placesConfig.maxResults * pageNumber)
-            .limit(placesConfig.maxResults)
+            .skip(placesConfig.maxResultsPerPage * pageNumber)
+            .limit(placesConfig.maxResultsPerPage)
             .toList()
 
         Observable.zip(totalNumberOfAllIdAssignedPlacesObservable, paginatedIdAssignedPlacesObservable, { Integer count, List<PlaceWithDistance> places ->
@@ -171,23 +168,23 @@ class RTreePlacesService implements PlacesService {
         final Position east = queryPosition.predict(searchRadius, 90)
         final Position west = queryPosition.predict(searchRadius, 270)
 
-        final Observable<Entry<IdAssignedPlace, Point>> queryObservable = tree.search(Geometries.rectangle(west.getLon(), south.getLat(), east.getLon(), north.getLat()))
-            .filter({ Entry<IdAssignedPlace, Point> entry ->
-                queryPosition.getDistanceToKm(Position.create(entry.geometry().y(), entry.geometry().x())).round(Constants.DISTANCE_ROUNDING_DECIMAL_PLACES) < searchRadius
+        final Observable<PlaceWithDistance> queryObservable = tree.search(Geometries.rectangle(west.getLon(), south.getLat(), east.getLon(), north.getLat()))
+            .map({ Entry<IdAssignedPlace, Point> entry ->
+                new PlaceWithDistance(
+                    distance: queryPosition.getDistanceToKm(Position.create(entry.geometry().y(), entry.geometry().x())).round(Constants.DISTANCE_ROUNDING_DECIMAL_PLACES),
+                    place: entry.value())
             } as Func1)
+            .filter({ PlaceWithDistance placeWithDistance ->
+                placeWithDistance.distance < searchRadius
+            } as Func1)
+            .cacheWithInitialCapacity(placesConfig.findNearCoordinatePairObservableCacheDefaultSize)
 
         final Observable<PlaceWithDistance> sortedPlaceWithDistanceObservable = queryObservable
-            .map({ Entry<IdAssignedPlace, Point> entry ->
-
-                new PlaceWithDistance(
-                        distance: queryPosition.getDistanceToKm(Position.create(entry.geometry().y(), entry.geometry().x())).round(Constants.DISTANCE_ROUNDING_DECIMAL_PLACES),
-                        place: entry.value())
-            } as Func1)
             .sorted({ PlaceWithDistance first, PlaceWithDistance second ->
                 Double.compare(first.distance, second.distance)
             } as Func2)
-            .skip(placesConfig.maxResults * pageNumber)
-            .limit(placesConfig.maxResults)
+            .skip(placesConfig.maxResultsPerPage * pageNumber)
+            .limit(placesConfig.maxResultsPerPage)
 
         Observable.zip(queryObservable.count(), sortedPlaceWithDistanceObservable.toList(), { Integer count, List<PlaceWithDistance> places ->
 

@@ -276,4 +276,13 @@ class FunctionalSpec extends Specification {
         then:
         jsonSlurper.parseText(getPlacesResponseFollowingDeletion.body.text).totalPlaces == 0
     }
+
+    void "request to get individual place which does not exist should fail with a 404"() {
+
+        when:
+        def response = applicationUnderTest.httpClient.get("${Constants.BASE_API_RESOURCE_PATH_WITH_STARTING_SLASH}/asdf")
+
+        then:
+        response.statusCode == 404
+    }
 }

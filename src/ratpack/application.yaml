@@ -1,6 +1,8 @@
 star: true
 minChildren: 2
 maxChildren: 4
-maxResults: 25
+maxResultsPerPage: 25
 defaultSearchRadius: .5
-maxAllowableSearchRadius: 10
+maxAllowableSearchRadius: 50
+findNearCoordinatePairObservableCacheDefaultSize: 1000
+findAllObservableCacheDefaultSize: 500000
