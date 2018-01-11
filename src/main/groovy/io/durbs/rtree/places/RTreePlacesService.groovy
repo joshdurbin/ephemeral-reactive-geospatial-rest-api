@@ -150,7 +150,7 @@ class RTreePlacesService implements PlacesService {
         Observable.zip(totalNumberOfAllIdAssignedPlacesObservable, paginatedIdAssignedPlacesObservable, { Integer count, List<PlaceWithDistance> places ->
 
             new PaginatedPlaces<IdAssignedPlace>(totalPlaces: count, places: places)
-        })
+        } as Func2)
         .bindExec()
     }
 
@@ -185,7 +185,7 @@ class RTreePlacesService implements PlacesService {
         Observable.zip(queryObservable.count(), sortedPlaceWithDistanceObservable.toList(), { Integer count, List<PlaceWithDistance> places ->
 
             new PaginatedPlaces<PlaceWithDistance>(totalPlaces: count, places: places)
-        })
+        } as Func2)
         .bindExec()
     }
 }

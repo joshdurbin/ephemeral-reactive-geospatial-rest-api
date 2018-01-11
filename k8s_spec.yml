@@ -14,13 +14,13 @@ spec:
       name: app-port
     readinessProbe:
       httpGet:
-        path: /places
+        path: /api/v0/places
         port: 5050
       initialDelaySeconds: 10
       periodSeconds: 10
     livenessProbe:
       httpGet:
-        path: /places
+        path: /api/v0/places
         port: 5050
       initialDelaySeconds: 10
       periodSeconds: 10
@@ -50,13 +50,15 @@ apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
  name: ephemeral-ingress
- annotations:
-   kubernetes.io/ingress.class: "gce"
 spec:
  rules:
  - http:
      paths:
-     - path: /api/v0/*
+     - path: /api/v0/places
+       backend:
+         serviceName: ephemeral-rest-geospatial-svc
+         servicePort: 8080
+     - path: /api/v0/places/*
        backend:
          serviceName: ephemeral-rest-geospatial-svc
          servicePort: 8080
