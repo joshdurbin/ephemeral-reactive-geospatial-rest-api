@@ -31,7 +31,6 @@ class PlacesModule extends AbstractModule {
     @Provides
     @Singleton
     ObjectMapper provideCustomObjectMapper() {
-
         new ObjectMapper().setSerializationInclusion(JsonInclude.Include.NON_NULL)
     }
 }

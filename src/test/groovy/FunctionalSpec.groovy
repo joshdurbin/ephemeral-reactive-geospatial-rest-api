@@ -58,10 +58,10 @@ class FunctionalSpec extends Specification {
         jsonSlurper.parseText(response.body.text).totalPlaces == 0
     }
 
-    void "insert the twin peaks place without a name"() {
+    void "fail to insert the twin peaks place without a name"() {
 
         when:
-        def createResponse = applicationUnderTest.httpClient.requestSpec { spec ->
+        def response = applicationUnderTest.httpClient.requestSpec { spec ->
 
             spec.headers.'Content-Type' = [MediaType.APPLICATION_JSON]
             spec.body { body ->
@@ -70,14 +70,14 @@ class FunctionalSpec extends Specification {
         }.post(Constants.BASE_API_RESOURCE_PATH_WITH_STARTING_SLASH)
 
         then:
-        createResponse.statusCode == 400
-        jsonSlurper.parseText(createResponse.body.text).fieldErrors.collect { it.field }.contains('name')
+        response.statusCode == 400
+        jsonSlurper.parseText(response.body.text).fieldErrors.collect { it.field }.contains('name')
     }
 
-    void "insert a place with no body, no data missing the required named, lat, and long"() {
+    void "fail to insert a place with no body, no data missing the required named, lat, and long"() {
 
         when:
-        def createResponse = applicationUnderTest.httpClient.requestSpec { spec ->
+        def response = applicationUnderTest.httpClient.requestSpec { spec ->
 
             spec.headers.'Content-Type' = [MediaType.APPLICATION_JSON]
             spec.body { body ->
@@ -86,10 +86,10 @@ class FunctionalSpec extends Specification {
         }.post(Constants.BASE_API_RESOURCE_PATH_WITH_STARTING_SLASH)
 
         then:
-        createResponse.statusCode == 400
-        jsonSlurper.parseText(createResponse.body.text).fieldErrors.collect { it.field }.contains('name')
-        jsonSlurper.parseText(createResponse.body.text).fieldErrors.collect { it.field }.contains('latitude')
-        jsonSlurper.parseText(createResponse.body.text).fieldErrors.collect { it.field }.contains('longitude')
+        response.statusCode == 400
+        jsonSlurper.parseText(response.body.text).fieldErrors.collect { it.field }.contains('name')
+        jsonSlurper.parseText(response.body.text).fieldErrors.collect { it.field }.contains('latitude')
+        jsonSlurper.parseText(response.body.text).fieldErrors.collect { it.field }.contains('longitude')
     }
 
     void "get a random place with an empty tree"() {
@@ -121,6 +121,8 @@ class FunctionalSpec extends Specification {
 
         then:
         getResponse.statusCode == 200
+        jsonSlurper.parseText(getResponse.body.text).id == id
+        jsonSlurper.parseText(getResponse.body.text).name == exploratorium.name
     }
 
     void "count should be one after exploratorium insertion"() {
@@ -161,6 +163,8 @@ class FunctionalSpec extends Specification {
 
         then:
         getResponse.statusCode == 200
+        jsonSlurper.parseText(getResponse.body.text).id == id
+        jsonSlurper.parseText(getResponse.body.text).name == sutroBaths.name
     }
 
     void "count should be two after exploratorium, sutro baths insertion"() {
