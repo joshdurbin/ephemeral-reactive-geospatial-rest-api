@@ -3,6 +3,7 @@ import io.durbs.rtree.places.Constants
 import io.durbs.rtree.places.PlacesConfig
 import io.durbs.rtree.places.PlacesHandlerChain
 import io.durbs.rtree.places.PlacesModule
+import ratpack.handling.RequestLogger
 import ratpack.rx.RxRatpack
 
 import static ratpack.groovy.Groovy.ratpack
@@ -22,7 +23,7 @@ ratpack {
   }
 
   handlers {
-
+    all(RequestLogger.ncsa())
     prefix(Constants.BASE_API_RESOURCE_PATH, PlacesHandlerChain)
   }
 }
