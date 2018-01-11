@@ -2,6 +2,7 @@ package io.durbs.rtree.places
 
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.github.davidmoten.rtree.RTree
 import com.google.inject.AbstractModule
 import com.google.inject.Provides
 import com.google.inject.Singleton
@@ -30,7 +31,20 @@ class PlacesModule extends AbstractModule {
 
     @Provides
     @Singleton
-    ObjectMapper provideCustomObjectMapper() {
+    ObjectMapper provideObjectMapper() {
         new ObjectMapper().setSerializationInclusion(JsonInclude.Include.NON_NULL)
+    }
+
+    @Provides
+    @Singleton
+    RTree.Builder provideBuilder(PlacesConfig placesConfig) {
+
+        RTree.Builder rTreeBuilder = RTree.minChildren(placesConfig.minChildren).maxChildren(placesConfig.maxChildren)
+
+        if (placesConfig.star) {
+            rTreeBuilder = rTreeBuilder.star()
+        }
+
+        rTreeBuilder
     }
 }

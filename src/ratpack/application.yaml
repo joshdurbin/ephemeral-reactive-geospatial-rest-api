@@ -4,5 +4,5 @@ maxChildren: 4
 maxResultsPerPage: 25
 defaultSearchRadius: .5
 maxAllowableSearchRadius: 50
-findNearCoordinatePairObservableCacheDefaultSize: 1000
-findAllObservableCacheDefaultSize: 500000
+findNearObservableCacheInitialCapacity: 1000
+findAllObservableCacheInitialCapacity: 100000

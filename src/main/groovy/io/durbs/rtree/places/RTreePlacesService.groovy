@@ -44,19 +44,15 @@ class RTreePlacesService implements PlacesService {
     final PublishSubject<MutatingRTreeAction> rTreeActionPublishSubject
 
     final PlacesConfig placesConfig
+    final RTree.Builder rTreeBuilder
 
     volatile RTree<IdAssignedPlace, Point> tree
 
     @Inject
-    RTreePlacesService(PlacesConfig placesConfig) {
+    RTreePlacesService(PlacesConfig placesConfig, RTree.Builder rTreeBuilder) {
 
         this.placesConfig = placesConfig
-
-        RTree.Builder rTreeBuilder = RTree.minChildren(placesConfig.minChildren).maxChildren(placesConfig.maxChildren)
-
-        if (placesConfig.star) {
-            rTreeBuilder = rTreeBuilder.star()
-        }
+        this.rTreeBuilder = rTreeBuilder
 
         tree = rTreeBuilder.create()
 
@@ -142,7 +138,7 @@ class RTreePlacesService implements PlacesService {
             .map({ Entry<IdAssignedPlace, Point> entry ->
                 entry.value()
             } as Func1)
-            .cacheWithInitialCapacity(placesConfig.findAllObservableCacheDefaultSize)
+            .cacheWithInitialCapacity(placesConfig.findAllObservableCacheInitialCapacity)
 
         final Observable<Integer> totalNumberOfAllIdAssignedPlacesObservable = getAllIdAssignedPlacesObservable.count()
 
@@ -177,7 +173,7 @@ class RTreePlacesService implements PlacesService {
             .filter({ PlaceWithDistance placeWithDistance ->
                 placeWithDistance.distance < searchRadius
             } as Func1)
-            .cacheWithInitialCapacity(placesConfig.findNearCoordinatePairObservableCacheDefaultSize)
+            .cacheWithInitialCapacity(placesConfig.findNearObservableCacheInitialCapacity)
 
         final Observable<PlaceWithDistance> sortedPlaceWithDistanceObservable = queryObservable
             .sorted({ PlaceWithDistance first, PlaceWithDistance second ->

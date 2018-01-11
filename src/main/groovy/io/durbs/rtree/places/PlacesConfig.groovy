@@ -16,6 +16,6 @@ class PlacesConfig {
     Double defaultSearchRadius
     Double maxAllowableSearchRadius
 
-    Integer findNearCoordinatePairObservableCacheDefaultSize
-    Integer findAllObservableCacheDefaultSize
+    Integer findNearObservableCacheInitialCapacity
+    Integer findAllObservableCacheInitialCapacity
 }
