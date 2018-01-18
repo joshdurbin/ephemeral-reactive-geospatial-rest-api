@@ -1,0 +1,24 @@
+replicaCount: 1
+image:
+  repository: joshdurbin/ephemeral-reactive-geospatial-rest-api
+  tag: latest
+  pullPolicy: Always
+service:
+  name: ephemeral-rest-geospatial-svc
+  type: NodePort
+  externalPort: 8080
+  internalPort: 5050
+ingress:
+  enabled: true
+  paths:
+    - /api/v0/places
+    - /api/v0/places/*
+  annotations:
+    kubernetes.io/ingress.global-static-ip-name: gcp-test-ingress-ip
+resources:
+ limits:
+  cpu: 100m
+  memory: 256Mi
+ requests:
+  cpu: 100m
+  memory: 256Mi

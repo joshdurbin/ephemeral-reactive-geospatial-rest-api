@@ -1,0 +1,27 @@
+{{- if .Values.ingress.enabled -}}
+{{- $serviceName := include "ephemeral-reactive-geospatial-rest-api.fullname" . -}}
+{{- $servicePort := .Values.service.externalPort -}}
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: {{ template "ephemeral-reactive-geospatial-rest-api.fullname" . }}
+  labels:
+    app: {{ template "ephemeral-reactive-geospatial-rest-api.name" . }}
+    chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+  annotations:
+    {{- range $key, $value := .Values.ingress.annotations }}
+      {{ $key }}: {{ $value | quote }}
+    {{- end }}
+spec:
+  rules:
+    {{- range $path := .Values.ingress.paths }}
+    - http:
+        paths:
+          - path: {{ $path }}
+            backend:
+              serviceName: {{ $serviceName }}
+              servicePort: {{ $servicePort }}
+    {{- end -}}
+{{- end -}}
