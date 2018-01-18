@@ -24,13 +24,6 @@ spec:
         port: 5050
       initialDelaySeconds: 10
       periodSeconds: 10
-    resources:
-      requests:
-        memory: "1500Mi"
-        cpu: "500m"
-      limits:
-        memory: "1500Mi"
-        cpu: "500m"
 ---
 apiVersion: v1
 kind: Service
@@ -50,6 +43,8 @@ apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
  name: ephemeral-ingress
+ annotations:
+  kubernetes.io/ingress.global-static-ip-name: gcp-test-ingress-ip
 spec:
  rules:
  - http:

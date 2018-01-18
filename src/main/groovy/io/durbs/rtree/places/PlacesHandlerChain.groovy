@@ -1,5 +1,7 @@
 package io.durbs.rtree.places
 
+import static ratpack.jackson.Jackson.fromJson
+
 import com.google.inject.Inject
 import com.google.inject.Singleton
 import groovy.util.logging.Slf4j
@@ -13,8 +15,6 @@ import rx.functions.Func1
 
 import javax.validation.ConstraintViolation
 import javax.validation.Validator
-
-import static ratpack.jackson.Jackson.fromJson
 
 @Singleton
 @Slf4j
@@ -63,10 +63,10 @@ class PlacesHandlerChain extends GroovyChainAction {
 
                         Set<ConstraintViolation<Place>> violations = validator.validate(place)
 
-                        if (!violations.empty) {
-                            throw new PlaceSubmissionValidationException(violations)
-                        } else {
+                        if (violations.empty) {
                             placesService.savePlace(place)
+                        } else {
+                            throw new PlaceSubmissionValidationException(violations)
                         }
 
                     } as Func1)

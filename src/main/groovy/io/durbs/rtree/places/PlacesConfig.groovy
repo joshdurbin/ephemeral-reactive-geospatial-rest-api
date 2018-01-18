@@ -1,7 +1,7 @@
 package io.durbs.rtree.places
 
 import groovy.transform.CompileStatic
-import jdk.nashorn.internal.ir.annotations.Immutable
+import groovy.transform.Immutable
 
 @CompileStatic
 @Immutable
