@@ -3,7 +3,7 @@ buildscript {
     jcenter()
   }
   dependencies {
-    classpath 'io.ratpack:ratpack-gradle:1.5.1'
+    classpath 'io.ratpack:ratpack-gradle:1.5.4'
     classpath 'com.github.jengelman.gradle.plugins:shadow:2.0.2'
     classpath 'com.bmuschko:gradle-docker-plugin:3.0.11'
   }
@@ -36,7 +36,7 @@ dependencies {
 
   compile group: 'org.hibernate', name: 'hibernate-validator', version: '6.0.7.Final'
   compile group: 'com.github.davidmoten', name: 'grumpy-core', version: '0.2.3'
-  compile group: 'com.github.davidmoten', name: 'rtree', version: '0.8.0.4'
+  compile group: 'com.github.davidmoten', name: 'rtree', version: '0.8.5'
   compile group: 'com.github.gregwhitaker', name: 'ratpack-error', version: '1.5.0'
 
   compile ratpack.dependency('rx')

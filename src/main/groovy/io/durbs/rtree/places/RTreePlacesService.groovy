@@ -109,7 +109,7 @@ class RTreePlacesService implements PlacesService {
         .map({ Entry<IdAssignedPlace, Point> entry ->
             entry.value()
         } as Func1)
-        .bindExec()
+        .bindExec() as Observable<IdAssignedPlace>
     }
 
     @Override
@@ -124,7 +124,7 @@ class RTreePlacesService implements PlacesService {
                     .elementAt(new Random().nextInt(tree.size()))
                     .map({ Entry<IdAssignedPlace, Point> entry ->
                 entry.value()
-            } as Func1)
+            } as Func1) as Observable<IdAssignedPlace>
         }
 
         randomPlaceObservable.bindExec()
@@ -138,7 +138,7 @@ class RTreePlacesService implements PlacesService {
             .map({ Entry<IdAssignedPlace, Point> entry ->
                 entry.value()
             } as Func1)
-            .cacheWithInitialCapacity(placesConfig.findAllObservableCacheInitialCapacity)
+            .cacheWithInitialCapacity(placesConfig.findAllObservableCacheInitialCapacity) as Observable<IdAssignedPlace>
 
         final Observable<Integer> totalNumberOfAllIdAssignedPlacesObservable = getAllIdAssignedPlacesObservable.count()
 
@@ -151,7 +151,7 @@ class RTreePlacesService implements PlacesService {
 
             new PaginatedPlaces<IdAssignedPlace>(totalPlaces: count, places: places)
         } as Func2)
-        .bindExec()
+        .bindExec() as Observable<PaginatedPlaces<IdAssignedPlace>>
     }
 
     @Override
@@ -173,7 +173,7 @@ class RTreePlacesService implements PlacesService {
             .filter({ PlaceWithDistance placeWithDistance ->
                 placeWithDistance.distance < searchRadius
             } as Func1)
-            .cacheWithInitialCapacity(placesConfig.findNearObservableCacheInitialCapacity)
+            .cacheWithInitialCapacity(placesConfig.findNearObservableCacheInitialCapacity) as Observable<PlaceWithDistance>
 
         final Observable<PlaceWithDistance> sortedPlaceWithDistanceObservable = queryObservable
             .sorted({ PlaceWithDistance first, PlaceWithDistance second ->
@@ -186,6 +186,6 @@ class RTreePlacesService implements PlacesService {
 
             new PaginatedPlaces<PlaceWithDistance>(totalPlaces: count, places: places)
         } as Func2)
-        .bindExec()
+        .bindExec() as Observable<PaginatedPlaces<PlaceWithDistance>>
     }
 }
